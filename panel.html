@@ -37,13 +37,13 @@
             margin: 30px auto;
             padding: 0 30px;
         }
-        .welcome-header {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        .status-header {
+            background: linear-gradient(135deg, #0b1e33 0%, #1a2a3a 100%);
             color: white;
             border-radius: 16px;
             padding: 20px 30px;
             margin-bottom: 30px;
-            border-left: 6px solid #f59e0b;
+            border-left: 6px solid #00dac5;
         }
         .search-panel {
             background: white;
@@ -89,11 +89,6 @@
             border-radius: 18px;
             padding: 16px 24px;
             font-size: 16px;
-            transition: 0.2s;
-        }
-        .search-input:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
         }
         .search-button {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
@@ -101,16 +96,6 @@
             border-radius: 18px;
             padding: 16px 35px;
             font-weight: 700;
-            font-size: 16px;
-        }
-        .sql-console {
-            background: #0b1e33;
-            color: #b2f5ea;
-            border-radius: 18px;
-            padding: 20px;
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
-            margin-bottom: 25px;
-            border-left: 6px solid #00dac5;
         }
         .result-item {
             background: white;
@@ -118,12 +103,6 @@
             padding: 25px;
             margin-bottom: 15px;
             border-left: 6px solid #10b981;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            transition: 0.2s;
-        }
-        .result-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
         }
         .timer-alert {
             background: #fffbeb;
@@ -148,20 +127,41 @@
             border-radius: 40px;
             font-size: 13px;
         }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body>
     <div class="flag"></div>
 
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+            <h5 class="fw-bold">Məlumatlar yüklənir...</h5>
+            <p class="text-muted">Sagird.sql bazası yüklənir</p>
+        </div>
+    </div>
+
     <!-- Navbar -->
     <nav class="navbar">
         <div class="d-flex align-items-center">
             <i class="fas fa-search fa-2x me-3" style="color: #4f46e5;"></i>
-            <span class="brand">🔍 AZE Sorgu Panel</span>
+            <span class="brand">🔍 AZE Sorgu Paneli</span>
         </div>
         <div class="d-flex align-items-center gap-4">
             <span class="user-badge" id="userBadge">
-                <i class="fas fa-user me-2"></i> <span id="usernameDisplay">İstifadəçi</span>
+                <i class="fas fa-user me-2"></i> <span id="usernameDisplay">Yüklənir...</span>
             </span>
             <div class="d-flex align-items-center">
                 <div class="me-3 text-end">
@@ -169,7 +169,7 @@
                     <small class="text-success"><i class="fas fa-circle fa-xs"></i> online</small>
                 </div>
                 <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                    <span class="text-white fw-bold" id="userInitial">İ</span>
+                    <span class="text-white fw-bold" id="userInitial">A</span>
                 </div>
             </div>
             <button class="btn btn-outline-danger rounded-pill px-4" onclick="logout()">
@@ -179,39 +179,26 @@
     </nav>
 
     <div class="main-container">
-        <!-- Hoş geldin header -->
-        <div class="welcome-header">
+        <!-- Status Header -->
+        <div class="status-header">
             <div class="d-flex align-items-center w-100">
-                <i class="fas fa-database fa-3x me-4" style="color: #f59e0b;"></i>
+                <i class="fas fa-cloud-download-alt fa-3x me-4" style="color: #00dac5;"></i>
                 <div>
                     <h5 class="mb-1 fw-bold"><i class="fas fa-check-circle me-2"></i> Sagird.sql - Tələbə Məlumat Bazası</h5>
                     <div class="d-flex align-items-center gap-4 mt-2">
-                        <code style="background: #2d3748; padding: 6px 16px; border-radius: 30px; color: #e5e9f0; font-size: 13px;">
-                            📁 Yerli verilənlər bazası
-                        </code>
                         <span class="badge bg-success" id="sqlStatusBadge">
-                            <i class="fas fa-check-circle me-1"></i> Aktiv
+                            <i class="fas fa-check-circle me-1"></i> Yüklənir...
+                        </span>
+                        <span class="badge bg-info" id="recordCountBadge">
+                            <i class="fas fa-database me-1"></i> <span id="recordCount">0</span> qeyd
                         </span>
                     </div>
                 </div>
                 <div class="ms-auto">
-                    <button class="btn btn-outline-light rounded-pill" onclick="loadSQLFromFile()">
-                        <i class="fas fa-upload me-2"></i> SQL Yüklə
-                    </button>
-                    <input type="file" id="sqlFileInput" accept=".sql" style="display: none;">
+                    <span class="text-white-50">
+                        <i class="fas fa-sync-alt me-1"></i> Avtomatik yenilənir
+                    </span>
                 </div>
-            </div>
-        </div>
-
-        <!-- SQL Console -->
-        <div class="sql-console">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <span><i class="fas fa-terminal me-2"></i> SQL Console > sagird.sql</span>
-                <span><small id="lastSyncTime">Son yükləmə: -</small></span>
-            </div>
-            <div id="sqlConsoleOutput" style="height: 80px; overflow-y: auto; font-size: 13px;">
-                <div>> 📁 Sagird.sql faylı gözlənilir...</div>
-                <div>> ⚠️ Zəhmət olmasa SQL faylını yükləyin</div>
             </div>
         </div>
 
@@ -260,11 +247,11 @@
                 <div class="stat-card">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <small class="text-muted">Sessiya</small>
-                            <h6 class="fw-bold mt-2 mb-0" id="sessionUser">-</h6>
+                            <small class="text-muted">Son yenilənmə</small>
+                            <h6 class="fw-bold mt-2 mb-0" id="lastUpdateTime">-</h6>
                         </div>
                         <div class="bg-light p-3 rounded-3">
-                            <i class="fas fa-key fa-2x text-danger"></i>
+                            <i class="fas fa-clock fa-2x text-secondary"></i>
                         </div>
                     </div>
                 </div>
@@ -306,7 +293,6 @@
                 </div>
             </div>
 
-            <!-- Timer Alert -->
             <div class="timer-alert" id="timerAlert">
                 <i class="fas fa-hourglass-half me-2"></i>
                 Növbəti sorgu üçün <span id="timerSeconds">180</span> saniyə gözləməlisiniz
@@ -322,37 +308,32 @@
             <div id="resultsList"></div>
         </div>
 
-        <!-- Sagird.sql Table -->
+        <!-- Tələbə siyahısı -->
         <div class="mt-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold"><i class="fas fa-table me-2"></i> Sagird.sql - Tələbə siyahısı</h5>
-                <div>
-                    <span class="badge bg-light text-dark me-2">
-                        <i class="fas fa-database me-1"></i> Yerli SQL
-                    </span>
-                    <span class="badge bg-info me-2" id="recordCount">0 qeyd</span>
-                </div>
+                <h5 class="fw-bold"><i class="fas fa-table me-2"></i> Tələbə siyahısı</h5>
+                <span class="badge bg-light text-dark me-2" id="totalRecordCount">
+                    <i class="fas fa-database me-1"></i> <span id="totalRecords">0</span> tələbə
+                </span>
             </div>
             <div class="table-responsive bg-white rounded-4 shadow-sm">
                 <table class="table table-hover mb-0" id="sagirdTable">
                     <thead class="table-light">
                         <tr>
-                            <th>ID</th>
                             <th>Ad Soyad</th>
                             <th>Şagird №</th>
                             <th>UTIS kod</th>
                             <th>Sinif</th>
                             <th>Məktəb</th>
                             <th>Telefon</th>
-                            <th>Ünvan</th>
                             <th>Qeydiyyat</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="9" class="text-center py-5 text-muted">
-                                <i class="fas fa-database fa-3x mb-3"></i><br>
-                                SQL faylını yükləyin
+                            <td colspan="7" class="text-center py-5">
+                                <div class="spinner-border text-primary mb-3" role="status"></div>
+                                <p class="text-muted">Məlumatlar yüklənir...</p>
                             </td>
                         </tr>
                     </tbody>
@@ -370,39 +351,26 @@
 
     <script>
         // ===========================================
-        // 🔐 SESSION KONTROL - HƏR KƏSƏ AYRI HESAB
+        // 🔐 SESSION KONTROL
         // ===========================================
         
-        // KEY: 010101ServerCrashed
         const MASTER_KEY = '010101ServerCrashed';
+        const GITHUB_SQL_URL = 'https://raw.githubusercontent.com/CallMeDexterMorgan/aze-sorgu/main/sagird.sql';
         
         // Session kontrol
-        if (!sessionStorage.getItem('aze_user')) {
-            // İstifadəçi məlumatlarını yoxla
-            const savedUser = localStorage.getItem('aze_user_' + CryptoJS.MD5(MASTER_KEY).toString());
-            
-            if (!savedUser) {
+        (function() {
+            const userData = sessionStorage.getItem('aze_user');
+            if (!userData) {
                 window.location.href = 'index.html';
             } else {
-                const userData = JSON.parse(savedUser);
-                sessionStorage.setItem('aze_user', JSON.stringify(userData));
+                const user = JSON.parse(userData);
+                document.getElementById('usernameDisplay').innerHTML = user.username;
+                document.getElementById('userInitial').innerHTML = user.username.charAt(0).toUpperCase();
             }
-        }
-
-        // İstifadəçi məlumatlarını göstər
-        function displayUserInfo() {
-            const userData = JSON.parse(sessionStorage.getItem('aze_user') || '{}');
-            const username = userData.username || 'İstifadəçi';
-            const initial = username.charAt(0).toUpperCase();
-            
-            document.getElementById('usernameDisplay').innerHTML = username;
-            document.getElementById('userInitial').innerHTML = initial;
-            document.getElementById('userRole').innerHTML = 'İstifadəçi';
-            document.getElementById('sessionUser').innerHTML = username;
-        }
+        })();
 
         // ===========================================
-        // 📁 SAGIRD.SQL - YALNIZ SQL FAYLINDAN
+        // 📁 GITHUB-DAN SQL YÜKLƏ (Avtomatik)
         // ===========================================
         
         let sagirdData = [];
@@ -410,151 +378,123 @@
         let lastSearchTime = null;
         let currentMethod = 1;
 
-        // SQL faylını yüklə
-        function loadSQLFromFile() {
-            document.getElementById('sqlFileInput').click();
-        }
-
-        // Fayl seçildikdə
-        document.getElementById('sqlFileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const sqlContent = event.target.result;
-                parseSQLContent(sqlContent);
-            };
-            reader.readAsText(file, 'UTF-8');
+        // Səhifə yüklənəndə SQL-i çək
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSQLFromGitHub();
         });
 
-        // SQL məzmununu parse et
-        function parseSQLContent(sqlContent) {
-            const sqlConsole = document.getElementById('sqlConsoleOutput');
-            sqlConsole.innerHTML = '<div>> 🔄 SQL faylı analiz edilir...</div>';
+        async function loadSQLFromGitHub() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
             
             try {
-                // INSERT INTO-ları tap
-                const rows = [];
-                const lines = sqlContent.split('\n');
-                let id = 1;
+                const response = await fetch(GITHUB_SQL_URL);
+                const sqlContent = await response.text();
                 
-                sqlConsole.innerHTML += `<div>> 📁 ${file.name} yüklənir...</div>`;
-                
-                for (let line of lines) {
-                    line = line.trim();
-                    
-                    // INSERT INTO sagirdler VALUES ...
-                    if (line.toUpperCase().includes('INSERT INTO') && line.includes('sagirdler')) {
-                        // VALUES hissəsini al
-                        const valuesMatch = line.match(/VALUES\s*\((.*)\)/i);
-                        if (valuesMatch) {
-                            const values = valuesMatch[1].split(',').map(v => 
-                                v.trim().replace(/^'|'$/g, '').replace(/\\'/g, "'")
-                            );
-                            
-                            if (values.length >= 9) {
-                                rows.push({
-                                    id: id++,
-                                    ad: values[1] || 'Bilinmir',
-                                    sagirdNo: values[2] || '-',
-                                    utis: values[3] || '-',
-                                    sinif: values[4] || '-',
-                                    mekteb: values[5] || '-',
-                                    telefon: values[6] || '-',
-                                    unvan: values[7] || '-',
-                                    qeydiyyat: values[8] || '2023'
-                                });
-                            }
-                        }
-                    }
-                }
-                
-                if (rows.length > 0) {
-                    sagirdData = rows;
-                    
-                    // İstifadəçiyə özəl yadda saxla
-                    const userData = JSON.parse(sessionStorage.getItem('aze_user') || '{}');
-                    const userKey = 'sagird_data_' + userData.username;
-                    localStorage.setItem(userKey, JSON.stringify(rows));
-                    localStorage.setItem(userKey + '_last', new Date().toISOString());
-                    
-                    sqlConsole.innerHTML += `<div>> ✅ ${rows.length} tələbə məlumatı yükləndi</div>`;
-                    document.getElementById('totalStudents').innerHTML = rows.length;
-                    document.getElementById('lastSyncTime').innerHTML = `Son yükləmə: ${new Date().toLocaleString('az')}`;
-                    document.getElementById('recordCount').innerHTML = `${rows.length} qeyd`;
-                    
-                    loadTableData(rows);
-                    createViewsAndIndexes();
-                } else {
-                    sqlConsole.innerHTML += `<div>> ❌ Heç bir məlumat tapılmadı</div>`;
-                }
+                parseSQLContent(sqlContent);
                 
             } catch (error) {
-                sqlConsole.innerHTML += `<div>> ❌ Xəta: ${error.message}</div>`;
+                console.error('SQL yükləmə xətası:', error);
+                document.getElementById('sqlStatusBadge').innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> Xəta';
+                document.getElementById('sqlStatusBadge').className = 'badge bg-danger';
+                
+                // Backup - LocalStorage-dan yüklə
+                const userData = JSON.parse(sessionStorage.getItem('aze_user') || '{}');
+                const cachedData = localStorage.getItem('sagird_cache_' + userData.username);
+                
+                if (cachedData) {
+                    sagirdData = JSON.parse(cachedData);
+                    updateUIAfterLoad();
+                }
+                
+                document.getElementById('loadingOverlay').style.display = 'none';
             }
         }
 
-        // 🔧 VIEW və INDEX'lər
-        function createViewsAndIndexes() {
-            console.log('🔧 View və Indexlər yaradılır...');
+        function parseSQLContent(sqlContent) {
+            const rows = [];
+            let id = 1;
             
-            // 1. 👁 VIEW: sagird_aktiv (2023 ve sonrası)
+            // SQL-i parse et
+            const lines = sqlContent.split('\n');
+            
+            for (let line of lines) {
+                line = line.trim();
+                
+                if (line.toUpperCase().includes('INSERT INTO') && line.includes('sagirdler')) {
+                    const valuesMatch = line.match(/VALUES\s*\((.*)\)/i);
+                    
+                    if (valuesMatch) {
+                        const values = valuesMatch[1].split(',').map(v => 
+                            v.trim().replace(/^'|'$/g, '').replace(/\\'/g, "'")
+                        );
+                        
+                        if (values.length >= 8) {
+                            rows.push({
+                                id: id++,
+                                ad: values[1] || 'Bilinmir',
+                                sagirdNo: values[2] || '-',
+                                utis: values[3] || '-',
+                                sinif: values[4] || '-',
+                                mekteb: values[5] || '-',
+                                telefon: values[6] || '-',
+                                unvan: values[7] || '-',
+                                qeydiyyat: values[8] || '2023'
+                            });
+                        }
+                    }
+                }
+            }
+            
+            if (rows.length > 0) {
+                sagirdData = rows;
+                
+                // İstifadəçiye özəl cache
+                const userData = JSON.parse(sessionStorage.getItem('aze_user') || '{}');
+                localStorage.setItem('sagird_cache_' + userData.username, JSON.stringify(rows));
+                
+                updateUIAfterLoad();
+            }
+            
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function updateUIAfterLoad() {
+            // UI elementlərini yenilə
+            document.getElementById('totalStudents').innerHTML = sagirdData.length;
+            document.getElementById('totalRecords').innerHTML = sagirdData.length;
+            document.getElementById('recordCount').innerHTML = sagirdData.length;
+            document.getElementById('recordCountBadge').innerHTML = '<i class="fas fa-database me-1"></i> ' + sagirdData.length + ' qeyd';
+            document.getElementById('sqlStatusBadge').innerHTML = '<i class="fas fa-check-circle me-1"></i> Aktiv';
+            document.getElementById('sqlStatusBadge').className = 'badge bg-success';
+            document.getElementById('lastUpdateTime').innerHTML = new Date().toLocaleString('az', {hour: '2-digit', minute: '2-digit'});
+            
+            // View və index-lər yarat
+            createViewsAndIndexes();
+            
+            // Table-ı yüklə
+            loadTableData(sagirdData.slice(0, 100)); // İlk 100 nəticə
+        }
+
+        function createViewsAndIndexes() {
+            // Aktiv şagirdlər (2023+)
             window.sagird_aktiv = function() {
                 return sagirdData.filter(s => parseInt(s.qeydiyyat) >= 2023);
             };
             
-            // 2. ⚡ INDEX'ler
-            window.indexes = {
-                ad_soyad: {},
-                sagird_no: {},
-                utis: {},
-                telefon: {}
-            };
-            
-            sagirdData.forEach((s, index) => {
-                // Ad soyad index
-                s.ad.toLowerCase().split(' ').forEach(kelime => {
-                    if (kelime.length > 2) {
-                        if (!window.indexes.ad_soyad[kelime]) window.indexes.ad_soyad[kelime] = [];
-                        window.indexes.ad_soyad[kelime].push(index);
-                    }
-                });
-                
-                // Şagird nömrəsi index
-                window.indexes.sagird_no[s.sagirdNo] = index;
-                
-                // UTIS index
-                window.indexes.utis[s.utis] = index;
-                
-                // Telefon index (son 4 rəqəm)
-                const son4 = s.telefon.slice(-4);
-                if (!window.indexes.telefon[son4]) window.indexes.telefon[son4] = [];
-                window.indexes.telefon[son4].push(index);
-            });
-            
-            const aktifler = window.sagird_aktiv();
-            document.getElementById('activeStudents').innerHTML = aktifler.length;
-            
-            const sqlConsole = document.getElementById('sqlConsoleOutput');
-            sqlConsole.innerHTML += `<div>> 🔧 VIEW 'sagird_aktiv' yaradıldı (${aktifler.length} şagird)</div>`;
-            sqlConsole.innerHTML += `<div>> ⚡ INDEX'lər yaradıldı</div>`;
+            document.getElementById('activeStudents').innerHTML = window.sagird_aktiv().length;
         }
 
-        // Table'ı yüklə
         function loadTableData(data) {
             let html = '';
             data.forEach(s => {
                 html += `<tr>
-                    <td>${s.id}</td>
                     <td class="fw-bold">${s.ad}</td>
                     <td>${s.sagirdNo}</td>
                     <td>${s.utis}</td>
                     <td>${s.sinif}</td>
-                    <td>${s.mekteb}</td>
+                    <td>${s.mekteb.substring(0, 30)}...</td>
                     <td>${s.telefon}</td>
-                    <td>${s.unvan}</td>
-                    <td>${s.qeydiyyat}</td>
+                    <td><span class="badge bg-info">${s.qeydiyyat}</span></td>
                 </tr>`;
             });
             document.getElementById('tableBody').innerHTML = html;
@@ -562,6 +502,7 @@
             if ($.fn.DataTable.isDataTable('#sagirdTable')) {
                 $('#sagirdTable').DataTable().destroy();
             }
+            
             $('#sagirdTable').DataTable({
                 pageLength: 10,
                 language: {
@@ -573,14 +514,52 @@
             });
         }
 
-        // ⚡ Hızlı arama
-        function superFastSearch(query, method) {
-            const start = performance.now();
+        // ===========================================
+        // 🔍 SORGULAMA
+        // ===========================================
+        
+        document.querySelectorAll('.method-item').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.method-item').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentMethod = parseInt(this.dataset.method);
+                
+                const placeholders = {
+                    1: '👤 Ad Soyad daxil edin (məs: Əliyev Elnur)',
+                    2: '🎓 Şagird nömrəsi daxil edin (məs: 2023001)',
+                    3: '📋 UTIS kodu daxil edin (məs: UTIS12345)',
+                    4: '📞 Telefon nömrəsi daxil edin (məs: +994501234567)'
+                };
+                document.getElementById('searchInput').placeholder = placeholders[currentMethod];
+            });
+        });
+
+        function searchSagird() {
+            const query = document.getElementById('searchInput').value.trim();
+            
+            if (!query) {
+                alert('Zəhmət olmasa axtarış məlumatı daxil edin!');
+                return;
+            }
+
+            if (sagirdData.length === 0) {
+                alert('Məlumat bazası yüklənir, biraz gözləyin...');
+                return;
+            }
+
+            // 3 dəqiqə qaydası
+            if (lastSearchTime) {
+                const diff = (new Date() - lastSearchTime) / 1000;
+                if (diff < 180) {
+                    const remaining = Math.ceil(180 - diff);
+                    showTimer(remaining);
+                    return;
+                }
+            }
+
+            // Axtarış
             let results = [];
-            
-            if (!query) return [];
-            
-            switch(method) {
+            switch(currentMethod) {
                 case 1:
                     results = sagirdData.filter(s => 
                         s.ad.toLowerCase().includes(query.toLowerCase())
@@ -602,90 +581,15 @@
                     );
                     break;
             }
-            
-            const end = performance.now();
-            console.log(`⚡ Arama: ${(end - start).toFixed(2)}ms`);
-            
-            return results;
-        }
 
-        // Method dəyişdirmə
-        document.querySelectorAll('.method-item').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.method-item').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentMethod = parseInt(this.dataset.method);
-                
-                const placeholders = {
-                    1: '👤 Ad Soyad daxil edin (məs: Əliyev Elnur)',
-                    2: '🎓 Şagird nömrəsi daxil edin (məs: 2023001)',
-                    3: '📋 UTIS kodu daxil edin (məs: UTIS12345)',
-                    4: '📞 Telefon nömrəsi daxil edin (məs: +994501234567)'
-                };
-                document.getElementById('searchInput').placeholder = placeholders[currentMethod];
-            });
-        });
-
-        // Sorgulama
-        function searchSagird() {
-            const query = document.getElementById('searchInput').value.trim();
-            
-            if (!query) {
-                alert('Zəhmət olmasa axtarış məlumatı daxil edin!');
-                return;
-            }
-
-            if (sagirdData.length === 0) {
-                alert('Zəhmət olmasa əvvəlcə SQL faylını yükləyin!');
-                return;
-            }
-
-            // 3 dəqiqə kontrol
-            if (lastSearchTime) {
-                const diff = (new Date() - lastSearchTime) / 1000;
-                if (diff < 180) {
-                    const remaining = Math.ceil(180 - diff);
-                    const timerAlert = document.getElementById('timerAlert');
-                    document.getElementById('timerSeconds').innerHTML = remaining;
-                    timerAlert.style.display = 'block';
-                    
-                    let time = remaining;
-                    const interval = setInterval(() => {
-                        time--;
-                        document.getElementById('timerSeconds').innerHTML = time;
-                        if (time <= 0) {
-                            clearInterval(interval);
-                            timerAlert.style.display = 'none';
-                        }
-                    }, 1000);
-                    return;
-                }
-            }
-
-            const results = superFastSearch(query, currentMethod);
-            
             lastSearchTime = new Date();
             searchCount++;
             document.getElementById('todayQueries').innerHTML = searchCount;
             
             displayResults(results);
-            
-            const timerAlert = document.getElementById('timerAlert');
-            timerAlert.style.display = 'block';
-            document.getElementById('timerSeconds').innerHTML = '180';
-            
-            let time = 180;
-            const interval = setInterval(() => {
-                time--;
-                document.getElementById('timerSeconds').innerHTML = time;
-                if (time <= 0) {
-                    clearInterval(interval);
-                    timerAlert.style.display = 'none';
-                }
-            }, 1000);
+            showTimer(180);
         }
 
-        // Nəticələri göstər
         function displayResults(results) {
             const container = document.getElementById('resultsContainer');
             const list = document.getElementById('resultsList');
@@ -693,7 +597,7 @@
             
             if (results.length > 0) {
                 let html = '';
-                results.forEach(s => {
+                results.slice(0, 50).forEach(s => {
                     html += `
                         <div class="result-item">
                             <div class="row">
@@ -706,14 +610,13 @@
                                             <small class="text-muted d-block mb-1"><i class="fas fa-school me-2"></i> <strong>Sinif:</strong> ${s.sinif}</small>
                                         </div>
                                         <div class="col-md-6">
-                                            <small class="text-muted d-block mb-1"><i class="fas fa-building me-2"></i> <strong>Məktəb:</strong> ${s.mekteb}</small>
                                             <small class="text-muted d-block mb-1"><i class="fas fa-phone me-2"></i> <strong>Telefon:</strong> ${s.telefon}</small>
-                                            <small class="text-muted d-block mb-1"><i class="fas fa-map-marker me-2"></i> <strong>Ünvan:</strong> ${s.unvan}</small>
+                                            <small class="text-muted d-block mb-1"><i class="fas fa-map-marker me-2"></i> <strong>Ünvan:</strong> ${s.unvan.substring(0, 30)}...</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4 text-end">
-                                    <span class="badge bg-info rounded-pill px-3 py-2">Qeydiyyat: ${s.qeydiyyat}</span>
+                                    <span class="badge bg-info rounded-pill px-3 py-2">${s.qeydiyyat}</span>
                                 </div>
                             </div>
                         </div>
@@ -729,37 +632,26 @@
             }
         }
 
-        // Logout
+        function showTimer(seconds) {
+            const timerAlert = document.getElementById('timerAlert');
+            document.getElementById('timerSeconds').innerHTML = seconds;
+            timerAlert.style.display = 'block';
+            
+            let time = seconds;
+            const interval = setInterval(() => {
+                time--;
+                document.getElementById('timerSeconds').innerHTML = time;
+                if (time <= 0) {
+                    clearInterval(interval);
+                    timerAlert.style.display = 'none';
+                }
+            }, 1000);
+        }
+
         function logout() {
             sessionStorage.removeItem('aze_user');
             window.location.href = 'index.html';
         }
-
-        // Səhifə yükləndikdə
-        document.addEventListener('DOMContentLoaded', function() {
-            displayUserInfo();
-            
-            // İstifadəçinin öncədən yüklədiyi məlumatları yoxla
-            const userData = JSON.parse(sessionStorage.getItem('aze_user') || '{}');
-            if (userData.username) {
-                const userKey = 'sagird_data_' + userData.username;
-                const savedData = localStorage.getItem(userKey);
-                
-                if (savedData) {
-                    sagirdData = JSON.parse(savedData);
-                    document.getElementById('sqlConsoleOutput').innerHTML = `
-                        <div>> 📁 Öncədən yüklənmiş məlumatlar tapıldı</div>
-                        <div>> ✅ ${sagirdData.length} tələbə məlumatı yükləndi</div>
-                    `;
-                    document.getElementById('totalStudents').innerHTML = sagirdData.length;
-                    document.getElementById('lastSyncTime').innerHTML = `Son yükləmə: ${localStorage.getItem(userKey + '_last') ? new Date(localStorage.getItem(userKey + '_last')).toLocaleString('az') : '-'}`;
-                    document.getElementById('recordCount').innerHTML = `${sagirdData.length} qeyd`;
-                    
-                    loadTableData(sagirdData);
-                    createViewsAndIndexes();
-                }
-            }
-        });
     </script>
 </body>
 </html>
