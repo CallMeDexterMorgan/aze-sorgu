@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 AZE Sorgu Panel</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CryptoJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #0a0b1a 0%, #1a1b2f 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            color: #fff;
+        }
+        .flag {
+            background: linear-gradient(90deg, #3f9c35 33%, #ed2939 33%, #ed2939 66%, #00b9e4 66%);
+            height: 8px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+        .login-wrapper {
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 20px;
+        }
+        .login-box {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 45px 40px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .panel-title {
+            font-size: 36px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+        .key-field {
+            background: #f8faff;
+            border: 3px solid #e0e5ff;
+            border-radius: 20px;
+            padding: 18px;
+            font-size: 24px;
+            letter-spacing: 10px;
+            text-align: center;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+        .key-field:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 6px rgba(102, 126, 234, 0.15);
+            background: white;
+        }
+        .enter-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 16px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        .enter-btn:hover {
+            transform: scale(0.97);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+        }
+        .error-box {
+            color: #ed2939;
+            background: rgba(237, 41, 57, 0.08);
+            border: 2px solid rgba(237, 41, 57, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+            font-weight: 600;
+        }
+        .github-sync {
+            background: #161b22;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255,255,255,0.7);
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .shake {
+            animation: shake 0.4s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="flag"></div>
+
+    <div class="login-wrapper">
+        <div class="login-box">
+            <div class="text-center mb-5">
+                <i class="fas fa-shield-hooded fa-5x text-primary mb-4"></i>
+                <h1 class="panel-title">🔍 AZE Sorgu Panel</h1>
+                <p class="text-secondary mt-3">Azərbaycan Respublikası Təhsil Sistemi</p>
+                <span class="github-sync mt-3">
+                    <i class="fab fa-github"></i> Sagird.sql | GitHub Raw
+                </span>
+            </div>
+
+            <form id="keyForm">
+                <div class="mb-4">
+                    <label class="form-label text-secondary fw-bold">🔐 ACCESS KEY</label>
+                    <input type="password" class="form-control key-field" id="accessKey" 
+                           placeholder="••••••••••••" maxlength="20" autocomplete="off" autofocus>
+                    <div class="error-box" id="errorMessage">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        YANLIŞ KEY! Düzgün key daxil edin.
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn enter-btn text-white">
+                        <i class="fas fa-unlock-alt me-2"></i>
+                        PANELƏ DAXİL OL
+                    </button>
+                </div>
+            </form>
+
+            <hr class="my-4">
+            
+            <div class="d-flex justify-content-between small text-secondary">
+                <span><i class="fas fa-check-circle text-success"></i> Ready</span>
+                <span><i class="fas fa-github"></i> Sync</span>
+                <span><i class="fas fa-clock"></i> 3 dəq</span>
+            </div>
+            <div class="mt-3 text-center" id="githubStatus">
+                <span class="badge bg-success">✅ Sorğu Yükleniyor...</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <small>🔐 AZE Sorgu Panel  | Key: 010101ServerCrashed</small>
+        </div>
+    </div>
+
+    <script>
+        // ===========================================
+        // 🔐 KEY: 010101ServerCrashed
+        // ===========================================
+        
+        const MASTER_KEY = '010101ServerCrashed';
+        const MASTER_HASH = CryptoJS.SHA256(MASTER_KEY).toString();
+
+        function verifyAccessKey(inputKey) {
+            // Direkt karşılaştır
+            if (inputKey === MASTER_KEY) {
+                return true;
+            }
+            // Hash karşılaştır
+            const inputHash = CryptoJS.SHA256(inputKey).toString();
+            return inputHash === MASTER_HASH;
+        }
+
+        // Session oluştur
+        function createSecureSession() {
+            const sessionToken = CryptoJS.SHA256(Date.now() + MASTER_KEY).toString();
+            sessionStorage.setItem('aze_auth', btoa(sessionToken));
+            sessionStorage.setItem('aze_login', Date.now().toString());
+        }
+
+        // Form submit
+        document.getElementById('keyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const key = document.getElementById('accessKey').value;
+            const errorBox = document.getElementById('errorMessage');
+            
+            if (verifyAccessKey(key)) {
+                // ✅ KEY DOĞRU
+                createSecureSession();
+                
+                const btn = document.querySelector('.enter-btn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> GİRİŞ EDİLİR...';
+                btn.disabled = true;
+                
+                setTimeout(() => {
+                    window.location.href = 'panel.html';
+                }, 1200);
+            } else {
+                // ❌ KEY YANLIŞ
+                errorBox.style.display = 'block';
+                document.querySelector('.login-box').classList.add('shake');
+                document.getElementById('accessKey').classList.add('is-invalid');
+                document.getElementById('accessKey').value = '';
+                
+                setTimeout(() => {
+                    document.querySelector('.login-box').classList.remove('shake');
+                }, 500);
+                
+                // Konsol temizle - log koruma
+                console.clear();
+                console.log('%c⛔ Unauthorized access attempt blocked', 'color: #ed2939; font-size: 14px; font-weight: bold;');
+            }
+        });
+
+        // GitHub status
+        document.getElementById('githubStatus').innerHTML = '<span class="badge bg-success">✅ GitHub: Sagird.sql bağlantısı quruldu (https://raw.githubusercontent.com/knk/aze-sorgu/main/sagird.sql)</span>';
+
+        // Anti hack
+        setInterval(() => {
+            if (!sessionStorage.getItem('aze_auth')) {
+                console.clear();
+            }
+        }, 500);
+
+        // F12 engelle
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                e.preventDefault();
+                alert('🔒 Developer Tools deaktiv edilib!');
+            }
+        });
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+</html>
