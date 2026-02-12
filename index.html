@@ -1,119 +1,94 @@
 <!DOCTYPE html>
-<html lang="az">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔐 AZE Sorgu - Giriş</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <title>AZE Sorgu - Giriş</title>
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', sans-serif;
-            min-height: 100vh;
-        }
-        .flag {
-            background: linear-gradient(90deg, #3f9c35 33%, #ed2939 33%, #ed2939 66%, #00b9e4 66%);
-            height: 8px;
-            width: 100%;
-            position: fixed;
-            top: 0;
+            background: #050608;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         .login-box {
-            max-width: 450px;
-            margin: 100px auto;
-            background: white;
-            border-radius: 30px;
-            padding: 50px 40px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-        }
-        .key-input {
-            border: 3px solid #e2e8f0;
+            background: #0a0c12;
+            padding: 40px;
             border-radius: 20px;
-            padding: 18px;
-            font-size: 20px;
-            letter-spacing: 5px;
-            text-align: center;
+            width: 350px;
+            border: 1px solid #1e1e2e;
+        }
+        .title {
+            font-size: 28px;
             font-weight: bold;
+            background: linear-gradient(45deg, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 30px;
         }
-        .key-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
-        }
-        .login-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 20px;
-            padding: 16px;
-            font-size: 18px;
-            font-weight: 700;
-        }
-        .username-input {
-            border: 2px solid #e2e8f0;
-            border-radius: 15px;
+        input {
+            width: 100%;
             padding: 15px;
+            margin: 10px 0;
+            background: #15181e;
+            border: 1px solid #2d2d3a;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #8b5cf6, #ec4899);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .error {
+            color: #ef4444;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="flag"></div>
-
     <div class="login-box">
-        <div class="text-center mb-4">
-            <i class="fas fa-shield-alt fa-4x text-primary mb-3"></i>
-            <h2 class="fw-bold">🔍 AZE Sorgu</h2>
-            <p class="text-muted">Hesabınıza daxil olun</p>
+        <div class="title">🔍 AZE Sorgu</div>
+        
+        <input type="text" id="username" placeholder="İstifadəçi adı" autocomplete="off">
+        <input type="password" id="key" placeholder="Access Key">
+        
+        <button onclick="login()">Daxil ol</button>
+        
+        <div class="error" id="errorMessage">
+            Key və ya istifadəçi adı yanlışdır!
         </div>
-
-        <form id="loginForm">
-            <div class="mb-4">
-                <label class="form-label fw-bold">İstifadəçi adı</label>
-                <input type="text" class="form-control username-input" id="username" 
-                       placeholder="İstifadəçi adı" required autofocus>
-            </div>
-            
-            <div class="mb-4">
-                <label class="form-label fw-bold">Access Key</label>
-                <input type="password" class="form-control key-input" id="accessKey" 
-                       placeholder="••••••••••••" maxlength="20" required>
-            </div>
-
-            <div class="d-grid">
-                <button type="submit" class="btn btn-primary login-btn">
-                    <i class="fas fa-unlock-alt me-2"></i> DAXİL OL
-                </button>
-            </div>
-            
-            <div class="alert alert-danger mt-3" id="errorMessage" style="display: none;">
-                <i class="fas fa-exclamation-circle me-2"></i> Key və ya istifadəçi adı yanlışdır!
-            </div>
-        </form>
     </div>
 
     <script>
-        const VALID_KEY = '010101ServerCrashed';
-        
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
+        function login() {
             const username = document.getElementById('username').value.trim();
-            const key = document.getElementById('accessKey').value;
+            const key = document.getElementById('key').value;
             
-            if (key === VALID_KEY && username.length >= 3) {
-                const userData = {
-                    username: username,
-                    loginTime: new Date().toISOString(),
-                    userId: CryptoJS.MD5(username + Date.now()).toString().substring(0, 8)
-                };
-                
-                sessionStorage.setItem('aze_user', JSON.stringify(userData));
+            if (key === '010101ServerCrashed' && username.length >= 3) {
+                localStorage.setItem('aze_user', username);
                 window.location.href = 'panel.html';
             } else {
                 document.getElementById('errorMessage').style.display = 'block';
-                document.getElementById('accessKey').value = '';
             }
-        });
+        }
     </script>
 </body>
 </html>
