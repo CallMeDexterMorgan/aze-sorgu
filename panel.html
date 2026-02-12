@@ -1,439 +1,451 @@
 <!DOCTYPE html>
-<html lang="az">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔍 AZE Sorgu</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #0f0c1f 0%, #1a1730 100%);
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            min-height: 100vh;
+            background: #050608;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 0;
+            margin: 0;
             color: white;
         }
-        .flag {
-            background: linear-gradient(90deg, #3f9c35 33%, #ed2939 33%, #ed2939 66%, #00b9e4 66%);
-            height: 8px;
-            width: 100%;
-            position: fixed;
-            top: 0;
-            z-index: 1000;
-        }
         .navbar {
-            background: rgba(20, 15, 45, 0.95);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 15px 35px;
+            background: #0a0c12;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e1e2e;
         }
         .brand {
-            font-size: 28px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #8b5cf6, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .main-container {
+        .container {
             max-width: 900px;
-            margin: 40px auto;
+            margin: 30px auto;
             padding: 0 20px;
         }
-        .search-panel {
-            background: rgba(30, 25, 55, 0.8);
-            backdrop-filter: blur(15px);
-            border-radius: 30px;
-            padding: 35px;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        .methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: #0a0c12;
+            padding: 15px;
+            border-radius: 15px;
         }
-        .method-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 30px;
-        }
-        .method-item {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 16px 8px;
+        .method {
+            flex: 1;
+            padding: 12px;
             text-align: center;
+            background: #15181e;
+            border-radius: 10px;
             cursor: pointer;
-            transition: 0.2s;
-            color: #cbd5e1;
-            font-weight: 600;
-        }
-        .method-item i {
-            font-size: 24px;
-            display: block;
-            margin-bottom: 8px;
-            color: #a78bfa;
-        }
-        .method-item.active {
-            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-            color: white;
-            border-color: transparent;
-        }
-        .method-item.active i {
-            color: white;
-        }
-        .search-input {
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 18px 25px;
-            font-size: 18px;
-            color: white;
-            transition: 0.2s;
-        }
-        .search-input:focus {
-            background: rgba(255,255,255,0.1);
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
-            color: white;
-        }
-        .search-input::placeholder {
             color: #94a3b8;
-        }
-        .search-button {
-            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-            border: none;
-            border-radius: 20px;
-            padding: 18px 35px;
-            font-weight: 700;
-            font-size: 18px;
-            color: white;
             transition: 0.2s;
         }
-        .search-button:hover {
-            transform: scale(0.98);
-            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
+        .method.active {
+            background: linear-gradient(45deg, #8b5cf6, #ec4899);
+            color: white;
         }
-        .result-item {
-            background: rgba(30, 25, 55, 0.9);
-            backdrop-filter: blur(10px);
+        .search-area {
+            background: #0a0c12;
+            padding: 25px;
             border-radius: 20px;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 15px 20px;
+            background: #15181e;
+            border: 1px solid #2d2d3a;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+        .search-box button {
+            padding: 15px 35px;
+            background: linear-gradient(45deg, #8b5cf6, #ec4899);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .timer {
+            margin-top: 15px;
+            padding: 12px;
+            background: #1e1b0e;
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+            color: #fcd34d;
+            display: none;
+        }
+        .result-card {
+            background: #0a0c12;
+            border-radius: 16px;
             padding: 25px;
             margin-bottom: 15px;
-            border-left: 8px solid #8b5cf6;
-            border: 1px solid rgba(255,255,255,0.1);
-            animation: fadeIn 0.3s ease;
+            border-left: 6px solid #8b5cf6;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
-        .timer-alert {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fcd34d;
-            border-radius: 16px;
-            padding: 16px 24px;
-            margin-top: 20px;
-            display: none;
-            border-left: 6px solid #f59e0b;
-            backdrop-filter: blur(5px);
+        .result-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #8b5cf6;
+            margin: 0;
         }
-        .user-badge {
-            background: rgba(255,255,255,0.1);
+        .result-badge {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 6px 15px;
+            border-radius: 30px;
             color: white;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-size: 14px;
-            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .result-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            color: #cbd5e1;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .no-result {
+            background: #0a0c12;
+            padding: 40px;
+            text-align: center;
+            border-radius: 16px;
+            color: #94a3b8;
+            border-left: 6px solid #ef4444;
         }
         .stats {
             display: flex;
-            justify-content: space-between;
+            gap: 20px;
             margin-bottom: 20px;
             color: #94a3b8;
         }
     </style>
 </head>
 <body>
-    <div class="flag"></div>
-
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="d-flex align-items-center">
-            <i class="fas fa-search fa-2x me-3" style="color: #a78bfa;"></i>
-            <span class="brand">🔍 AZE Sorgu</span>
+    <div class="navbar">
+        <span class="brand">🔍 AZE Sorgu</span>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <span id="userDisplay"></span>
+            <button onclick="logout()" style="background: none; border: 1px solid #2d2d3a; color: white; padding: 8px 20px; border-radius: 30px; cursor: pointer;">Çıxış</button>
         </div>
-        <div class="d-flex align-items-center gap-4">
-            <span class="user-badge" id="userBadge">
-                <i class="fas fa-user me-2"></i> <span id="usernameDisplay">İstifadəçi</span>
-            </span>
-            <button class="btn btn-outline-light rounded-pill px-4" onclick="logout()" style="border-color: rgba(255,255,255,0.2);">
-                <i class="fas fa-sign-out-alt me-1"></i> Çıxış
-            </button>
-        </div>
-    </nav>
+    </div>
 
-    <div class="main-container">
-        <!-- Stats - Sadəcə rəqəmlər -->
+    <div class="container">
+        <!-- Stats -->
         <div class="stats">
-            <span><i class="fas fa-database me-2"></i> <span id="totalStats">0</span> nəticə</span>
-            <span><i class="fas fa-search me-2"></i> <span id="searchStats">0</span> sorgu</span>
-            <span><i class="fas fa-clock me-2"></i> 3 dəq</span>
+            <span><span id="totalCount">0</span> nəticə</span>
+            <span><span id="searchCount">0</span> sorgu</span>
+            <span>⏱ 3 dəqiqə</span>
         </div>
 
-        <!-- Search Panel -->
-        <div class="search-panel">
-            <h4 class="fw-bold mb-4" style="color: white;">
-                <i class="fas fa-search me-2" style="color: #a78bfa;"></i> Sorgulama
-            </h4>
-            
-            <div class="method-grid">
-                <div class="method-item active" data-method="1">
-                    <i class="fas fa-user"></i>
-                    Ad Soyad
-                </div>
-                <div class="method-item" data-method="2">
-                    <i class="fas fa-graduation-cap"></i>
-                    Şagird nömrəsi
-                </div>
-                <div class="method-item" data-method="3">
-                    <i class="fas fa-id-card"></i>
-                    UTIS kod
-                </div>
-                <div class="method-item" data-method="4">
-                    <i class="fas fa-phone"></i>
-                    Telefon
-                </div>
-            </div>
+        <!-- Methods -->
+        <div class="methods">
+            <div class="method active" onclick="setMethod(1, this)">👤 Ad Soyad</div>
+            <div class="method" onclick="setMethod(2, this)">🎓 Şagird №</div>
+            <div class="method" onclick="setMethod(3, this)">📋 UTIS kod</div>
+            <div class="method" onclick="setMethod(4, this)">📞 Telefon</div>
+        </div>
 
-            <div class="row g-3">
-                <div class="col-md-9">
-                    <input type="text" class="form-control search-input" id="searchInput" 
-                           placeholder="Ad Soyad daxil edin">
-                </div>
-                <div class="col-md-3">
-                    <button class="btn w-100 search-button" onclick="search()">
-                        <i class="fas fa-search me-2"></i> AXTAR
-                    </button>
-                </div>
+        <!-- Search -->
+        <div class="search-area">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Ad Soyad daxil edin" autocomplete="off">
+                <button onclick="search()">Axtar</button>
             </div>
-
-            <!-- Timer -->
-            <div class="timer-alert" id="timerAlert">
-                <i class="fas fa-hourglass-half me-2"></i>
-                Növbəti axtarış üçün <span id="timerSeconds">180</span> saniyə
+            <div class="timer" id="timer">
+                ⏳ Növbəti axtarış üçün <span id="timerSeconds">180</span> saniyə
             </div>
         </div>
 
         <!-- Results -->
-        <div id="resultsContainer" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 style="color: white;"><i class="fas fa-list-ul me-2"></i> Nəticələr</h5>
-                <span class="badge bg-primary rounded-pill px-4 py-2" id="resultCount">0</span>
-            </div>
-            <div id="resultsList"></div>
-        </div>
+        <div id="results"></div>
     </div>
-
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <script>
         // ===========================================
-        // 🔐 GİZLİ SİSTEM - İSTİFADƏÇİ GÖRMƏZ
+        // SADƏCƏ BURASI ÖNƏMLİ - SQL YÜKLƏMƏ
         // ===========================================
         
-        const GITHUB_URL = 'https://raw.githubusercontent.com/CallMeDexterMorgan/aze-sorgu/main/sagird.sql';
-        let data = [];
-        let searchCount = 0;
-        let lastSearch = null;
+        let students = [];
         let currentMethod = 1;
+        let lastSearchTime = null;
+        let searchCounter = 0;
 
-        // Sessiyanı yoxla
-        (function() {
-            const user = sessionStorage.getItem('aze_user');
-            if (!user) window.location.href = 'index.html';
-            else {
-                const userData = JSON.parse(user);
-                document.getElementById('usernameDisplay').innerHTML = userData.username;
-            }
-        })();
+        // İstifadəçi adı
+        const username = localStorage.getItem('aze_user') || 'İstifadəçi';
+        document.getElementById('userDisplay').innerHTML = username;
 
-        // GİZLİ yükləmə - istifadəçi heç nə görmür
-        (function init() {
-            const cached = localStorage.getItem('sagird_cache');
-            if (cached) {
-                data = JSON.parse(cached);
-                document.getElementById('totalStats').innerHTML = data.length;
-                return;
-            }
+        // ===========================================
+        // GITHUB-DAN SQL YÜKLƏ - İŞLƏYƏCƏK!
+        // ===========================================
+        
+        function loadSQL() {
+            const url = 'https://raw.githubusercontent.com/CallMeDexterMorgan/aze-sorgu/main/sagird.sql';
             
-            fetch(GITHUB_URL)
-                .then(res => res.text())
-                .then(sql => {
+            fetch(url)
+                .then(response => response.text())
+                .then(content => {
+                    console.log('SQL yükləndi, uzunluq:', content.length);
+                    
                     const rows = [];
                     let id = 1;
                     
-                    sql.split('\n').forEach(line => {
+                    // Hər sətri yoxla
+                    const lines = content.split('\n');
+                    
+                    for (let line of lines) {
+                        line = line.trim();
+                        
+                        // INSERT INTO olan sətirləri tap
                         if (line.includes('INSERT INTO') && line.includes('sagirdler')) {
-                            const match = line.match(/VALUES\s*\((.*)\)/i);
-                            if (match) {
-                                const v = match[1].split(',').map(v => 
-                                    v.trim().replace(/^'|'$/g, '')
-                                );
-                                rows.push({
-                                    ad: v[1] || '',
-                                    no: v[2] || '',
-                                    utis: v[3] || '',
-                                    sinif: v[4] || '',
-                                    mekteb: v[5] || '',
-                                    tel: v[6] || '',
-                                    unvan: v[7] || '',
-                                    il: v[8] || '2023'
-                                });
+                            try {
+                                // VALUES hissəsini al
+                                const valuesMatch = line.match(/VALUES\s*\((.*)\)/i);
+                                
+                                if (valuesMatch) {
+                                    const valuesString = valuesMatch[1];
+                                    const values = [];
+                                    let current = '';
+                                    let inQuotes = false;
+                                    
+                                    // Dəyərləri parse et (vergülləri ayır)
+                                    for (let char of valuesString) {
+                                        if (char === "'" && !inQuotes) {
+                                            inQuotes = true;
+                                            current += char;
+                                        } else if (char === "'" && inQuotes) {
+                                            inQuotes = false;
+                                            current += char;
+                                        } else if (char === ',' && !inQuotes) {
+                                            values.push(current.trim());
+                                            current = '';
+                                        } else {
+                                            current += char;
+                                        }
+                                    }
+                                    values.push(current.trim());
+                                    
+                                    // Təmizlə
+                                    const cleanValues = values.map(v => v.replace(/^'|'$/g, '').trim());
+                                    
+                                    if (cleanValues.length >= 8) {
+                                        rows.push({
+                                            id: id++,
+                                            ad: cleanValues[1] || 'Bilinmir',
+                                            no: cleanValues[2] || '-',
+                                            utis: cleanValues[3] || '-',
+                                            sinif: cleanValues[4] || '-',
+                                            mekteb: cleanValues[5] || '-',
+                                            tel: cleanValues[6] || '-',
+                                            unvan: cleanValues[7] || '-',
+                                            il: cleanValues[8] || '2023'
+                                        });
+                                    }
+                                }
+                            } catch (e) {
+                                console.log('Sətir parse xətası:', e);
                             }
                         }
-                    });
+                    }
                     
-                    data = rows;
-                    localStorage.setItem('sagird_cache', JSON.stringify(rows));
-                    document.getElementById('totalStats').innerHTML = rows.length;
+                    if (rows.length > 0) {
+                        students = rows;
+                        localStorage.setItem('sagird_data', JSON.stringify(rows));
+                        document.getElementById('totalCount').innerHTML = rows.length;
+                        console.log('✅', rows.length, 'tələbə yükləndi');
+                    } else {
+                        // Backup
+                        const cached = localStorage.getItem('sagird_data');
+                        if (cached) {
+                            students = JSON.parse(cached);
+                            document.getElementById('totalCount').innerHTML = students.length;
+                        }
+                    }
                 })
-                .catch(() => {
-                    // Səssiz xəta
+                .catch(error => {
+                    console.log('Xəta:', error);
+                    // Cache-dən yüklə
+                    const cached = localStorage.getItem('sagird_data');
+                    if (cached) {
+                        students = JSON.parse(cached);
+                        document.getElementById('totalCount').innerHTML = students.length;
+                    }
                 });
-        })();
+        }
+
+        // Səhifə açılan kimi SQL yüklə
+        loadSQL();
 
         // ===========================================
-        // 🔍 SORGULAMA
+        // SORGULAMA
         // ===========================================
         
-        // Method dəyiş
-        document.querySelectorAll('.method-item').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.method-item').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentMethod = parseInt(this.dataset.method);
-                
-                const placeholders = {
-                    1: 'Ad Soyad daxil edin',
-                    2: 'Şagird nömrəsi daxil edin',
-                    3: 'UTIS kodu daxil edin',
-                    4: 'Telefon daxil edin'
-                };
-                document.getElementById('searchInput').placeholder = placeholders[currentMethod];
-            });
-        });
+        function setMethod(method, element) {
+            currentMethod = method;
+            document.querySelectorAll('.method').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            
+            const placeholders = {
+                1: 'Ad Soyad daxil edin',
+                2: 'Şagird nömrəsi daxil edin',
+                3: 'UTIS kodu daxil edin',
+                4: 'Telefon nömrəsi daxil edin'
+            };
+            document.getElementById('searchInput').placeholder = placeholders[method];
+        }
 
-        // Axtarış
         function search() {
             const query = document.getElementById('searchInput').value.trim();
+            
             if (!query) {
                 alert('Məlumat daxil edin!');
                 return;
             }
+            
+            if (students.length === 0) {
+                alert('Məlumat bazası yüklənir, yenidən cəhd edin');
+                loadSQL(); // Təkrar yükləməyə çalış
+                return;
+            }
 
-            // 3 dəqiqə
-            if (lastSearch) {
-                const diff = (new Date() - lastSearch) / 1000;
+            // 3 dəqiqə qaydası
+            if (lastSearchTime) {
+                const diff = (new Date() - lastSearchTime) / 1000;
                 if (diff < 180) {
-                    const remaining = Math.ceil(180 - diff);
-                    showTimer(remaining);
+                    showTimer(Math.ceil(180 - diff));
                     return;
                 }
             }
 
-            // Axtar
+            // Axtarış
             let results = [];
             const q = query.toLowerCase();
             
             switch(currentMethod) {
-                case 1: // Ad
-                    results = data.filter(s => s.ad.toLowerCase().includes(q));
+                case 1: // Ad Soyad
+                    results = students.filter(s => s.ad.toLowerCase().includes(q));
                     break;
-                case 2: // Nömrə
-                    results = data.filter(s => s.no.includes(query));
+                case 2: // Şagird nömrəsi
+                    results = students.filter(s => s.no.includes(query));
                     break;
                 case 3: // UTIS
-                    results = data.filter(s => s.utis.toLowerCase().includes(q));
+                    results = students.filter(s => s.utis.toLowerCase().includes(q));
                     break;
-                case 4: // Tel
-                    results = data.filter(s => s.tel.includes(query));
+                case 4: // Telefon
+                    results = students.filter(s => s.tel.includes(query));
                     break;
             }
 
             // Nəticə
-            lastSearch = new Date();
-            searchCount++;
-            document.getElementById('searchStats').innerHTML = searchCount;
+            lastSearchTime = new Date();
+            searchCounter++;
+            document.getElementById('searchCount').innerHTML = searchCounter;
             
             showResults(results);
             showTimer(180);
         }
 
-        // Nəticə göstər
         function showResults(results) {
-            const container = document.getElementById('resultsContainer');
-            const list = document.getElementById('resultsList');
-            const count = document.getElementById('resultCount');
+            const resultsDiv = document.getElementById('results');
             
-            if (results.length > 0) {
-                let html = '';
-                results.slice(0, 20).forEach(s => {
-                    html += `
-                        <div class="result-item">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <h5 class="fw-bold mb-0" style="color: #a78bfa;">${s.ad}</h5>
-                                <span class="badge" style="background: rgba(139,92,246,0.3); color: white;">${s.il}</span>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p class="mb-2" style="color: #cbd5e1;">
-                                        <i class="fas fa-graduation-cap me-2" style="color: #a78bfa;"></i> ${s.no}
-                                    </p>
-                                    <p class="mb-2" style="color: #cbd5e1;">
-                                        <i class="fas fa-qrcode me-2" style="color: #a78bfa;"></i> ${s.utis}
-                                    </p>
-                                    <p class="mb-2" style="color: #cbd5e1;">
-                                        <i class="fas fa-school me-2" style="color: #a78bfa;"></i> ${s.sinif}
-                                    </p>
+            if (results.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="no-result">
+                        <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
+                        <h3>Nəticə tapılmadı</h3>
+                        <p style="color: #94a3b8;">Başqa axtarış sözü cəhd edin</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            
+            results.slice(0, 20).forEach(s => {
+                html += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h3 class="result-name">${s.ad}</h3>
+                            <span class="result-badge">${s.il}</span>
+                        </div>
+                        <div class="result-info">
+                            <div>
+                                <div class="info-item">
+                                    <span style="color: #8b5cf6;">🎓</span>
+                                    <span><strong>Şagird №:</strong> ${s.no}</span>
                                 </div>
-                                <div class="col-md-6">
-                                    <p class="mb-2" style="color: #cbd5e1;">
-                                        <i class="fas fa-phone me-2" style="color: #a78bfa;"></i> ${s.tel}
-                                    </p>
-                                    <p class="mb-2" style="color: #cbd5e1;">
-                                        <i class="fas fa-building me-2" style="color: #a78bfa;"></i> ${s.mekteb.substring(0, 30)}...
-                                    </p>
+                                <div class="info-item">
+                                    <span style="color: #8b5cf6;">📋</span>
+                                    <span><strong>UTIS:</strong> ${s.utis}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span style="color: #8b5cf6;">🏫</span>
+                                    <span><strong>Sinif:</strong> ${s.sinif}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="info-item">
+                                    <span style="color: #8b5cf6;">📞</span>
+                                    <span><strong>Telefon:</strong> ${s.tel}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span style="color: #8b5cf6;">🏛️</span>
+                                    <span><strong>Məktəb:</strong> ${s.mekteb.substring(0, 40)}...</span>
+                                </div>
+                                <div class="info-item">
+                                    <span style="color: #8b5cf6;">📍</span>
+                                    <span><strong>Ünvan:</strong> ${s.unvan.substring(0, 40)}...</span>
                                 </div>
                             </div>
                         </div>
-                    `;
-                });
-                list.innerHTML = html;
-                count.innerHTML = `${results.length} nəticə`;
-                container.style.display = 'block';
-            } else {
-                list.innerHTML = `
-                    <div class="alert" style="background: rgba(239,68,68,0.1); color: #fecaca; border: 1px solid rgba(239,68,68,0.2);">
-                        <i class="fas fa-exclamation-circle me-2"></i> Nəticə tapılmadı
                     </div>
                 `;
-                count.innerHTML = '0 nəticə';
-                container.style.display = 'block';
+            });
+            
+            if (results.length > 20) {
+                html += `<p style="color: #94a3b8; text-align: center; padding: 20px;">... və ${results.length - 20} nəticə daha</p>`;
             }
+            
+            resultsDiv.innerHTML = html;
         }
 
-        // Timer
         function showTimer(seconds) {
-            const timer = document.getElementById('timerAlert');
-            document.getElementById('timerSeconds').innerHTML = seconds;
+            const timer = document.getElementById('timer');
+            const timerSeconds = document.getElementById('timerSeconds');
+            
             timer.style.display = 'block';
+            timerSeconds.innerHTML = seconds;
             
             let time = seconds;
             const interval = setInterval(() => {
                 time--;
-                document.getElementById('timerSeconds').innerHTML = time;
+                timerSeconds.innerHTML = time;
                 if (time <= 0) {
                     clearInterval(interval);
                     timer.style.display = 'none';
@@ -441,9 +453,7 @@
             }, 1000);
         }
 
-        // Çıxış
         function logout() {
-            sessionStorage.removeItem('aze_user');
             window.location.href = 'index.html';
         }
     </script>
