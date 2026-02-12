@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>🔍 AZE Sorgu</title>
     <style>
+        /* CSS eyni qalır */
         body {
             background: #050608;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -128,15 +129,13 @@
     </div>
 
     <div class="container">
-        <!-- Methods -->
         <div class="methods">
             <div class="method active" onclick="setMethod(1, this)">👤 Ad Soyad</div>
-            <div class="method" onclick="setMethod(2, this)">🎓 Şagird №</div>
-            <div class="method" onclick="setMethod(3, this)">📋 UTIS kod</div>
-            <div class="method" onclick="setMethod(4, this)">📞 Telefon</div>
+            <div class="method" onclick="setMethod(2, this)">📋 UTIS kod</div>
+            <div class="method" onclick="setMethod(3, this)">📞 Telefon</div>
+            <div class="method" onclick="setMethod(4, this)">🎓 Sinif</div>
         </div>
 
-        <!-- Search -->
         <div class="search-area">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="Ad Soyad daxil edin" autocomplete="off">
@@ -147,7 +146,6 @@
             </div>
         </div>
 
-        <!-- Results -->
         <div id="results"></div>
     </div>
 
@@ -162,7 +160,7 @@
         document.getElementById('userDisplay').innerHTML = username;
 
         // ===========================================
-        // SQL YÜKLƏ - 100% İŞLƏYƏCƏK!
+        // MƏLUMATLAR - DİRƏKT CACHE-DƏN!
         // ===========================================
         
         let students = [];
@@ -170,89 +168,53 @@
         let lastSearchTime = null;
         let searchCount = 0;
 
-        // Dərhal yüklə
-        (function loadData() {
-            // Əvvəlcə cache yoxla
+        // MƏLUMATLARI YÜKLƏ - HEÇ BİR MESAJ YOX!
+        (function() {
             const cached = localStorage.getItem('sagird_170k');
+            
             if (cached) {
+                // CACHE VAR - DƏRHAL İŞLƏT
                 students = JSON.parse(cached);
-                console.log('Cache-dən yükləndi:', students.length);
-                return;
-            }
-
-            // GitHub-dan yüklə
-            fetch('https://raw.githubusercontent.com/CallMeDexterMorgan/aze-sorgu/main/sagird.sql')
-                .then(res => res.text())
-                .then(sql => {
-                    console.log('SQL yükləndi, uzunluq:', sql.length);
-                    
-                    const rows = [];
-                    let id = 1;
-                    
-                    // SADƏCƏ VALUES hissəsini götür
-                    const lines = sql.split('\n');
-                    
-                    for (let line of lines) {
-                        if (line.includes('INSERT INTO') && line.includes('sagirdler')) {
-                            // VALUES ( ... ) hissəsini al
-                            const match = line.match(/VALUES\s*\((.*)\)/i);
-                            if (match) {
-                                const valuesString = match[1];
-                                
-                                // Dəyərləri ayır
-                                const values = [];
-                                let current = '';
-                                let inQuotes = false;
-                                
-                                for (let char of valuesString) {
-                                    if (char === "'" && !inQuotes) {
-                                        inQuotes = true;
-                                        current += char;
-                                    } else if (char === "'" && inQuotes) {
-                                        inQuotes = false;
-                                        current += char;
-                                    } else if (char === ',' && !inQuotes) {
-                                        values.push(current.trim());
-                                        current = '';
-                                    } else {
-                                        current += char;
-                                    }
+            } else {
+                // CACHE YOX - GİZLİ YÜKLƏ
+                fetch('https://raw.githubusercontent.com/CallMeDexterMorgan/aze-sorgu/main/sagird.sql')
+                    .then(res => res.text())
+                    .then(sql => {
+                        const rows = [];
+                        let id = 1;
+                        
+                        sql.split('\n').forEach(line => {
+                            if (line.includes('INSERT INTO') && line.includes('sagirdler')) {
+                                const match = line.match(/VALUES\s*\((.*)\)/i);
+                                if (match) {
+                                    const values = match[1].split(',').map(v => 
+                                        v.trim().replace(/^'|'$/g, '')
+                                    );
+                                    
+                                    rows.push({
+                                        id: id++,
+                                        utis: values[1] || '',
+                                        tel: values[2] || '',
+                                        ad: values[3] || '',
+                                        soyad: values[4] || '',
+                                        ad_soyad: (values[3] + ' ' + values[4]).trim(),
+                                        sinif: values[6] || '',
+                                        mekteb: values[7] || ''
+                                    });
                                 }
-                                values.push(current.trim());
-                                
-                                // Təmizlə
-                                const clean = values.map(v => 
-                                    v.replace(/^'|'$/g, '').trim()
-                                );
-                                
-                                rows.push({
-                                    id: id++,
-                                    ad: clean[1] || 'Bilinmir',
-                                    no: clean[2] || '-',
-                                    utis: clean[3] || '-',
-                                    sinif: clean[4] || '-',
-                                    mekteb: clean[5] || '-',
-                                    tel: clean[6] || '-',
-                                    unvan: clean[7] || '-',
-                                    il: clean[8] || '2023'
-                                });
                             }
+                        });
+                        
+                        if (rows.length > 0) {
+                            students = rows;
+                            localStorage.setItem('sagird_170k', JSON.stringify(rows));
                         }
-                    }
-                    
-                    if (rows.length > 0) {
-                        students = rows;
-                        localStorage.setItem('sagird_170k', JSON.stringify(rows));
-                        console.log('✅ Uğurlu!', rows.length, 'tələbə yükləndi');
-                    }
-                })
-                .catch(err => {
-                    console.log('Xəta:', err);
-                });
+                    });
+            }
         })();
 
         // ===========================================
-        // SORGULAMA
+        // AXTARIŞ
         // ===========================================
         
         function setMethod(m, el) {
@@ -262,9 +224,9 @@
             
             const placeholders = {
                 1: 'Ad Soyad daxil edin',
-                2: 'Şagird nömrəsi daxil edin',
-                3: 'UTIS kodu daxil edin',
-                4: 'Telefon nömrəsi daxil edin'
+                2: 'UTIS kodu daxil edin',
+                3: 'Telefon nömrəsi daxil edin',
+                4: 'Sinif daxil edin'
             };
             document.getElementById('searchInput').placeholder = placeholders[m];
         }
@@ -277,17 +239,21 @@
                 return;
             }
 
-            // Hələ məlumat yoxdursa
+            // Cache YOXDURSA - GÖZLƏMƏ, DİRƏKT CACHE YARAT!
             if (students.length === 0) {
-                alert('Məlumat bazası yüklənir, 1 saniyə gözlə və yenidən axtar!');
-                // Təkrar yükləməyə çalış
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-                return;
+                const cached = localStorage.getItem('sagird_170k');
+                if (cached) {
+                    students = JSON.parse(cached);
+                } else {
+                    // 1 SANİYƏ GÖZLƏ, SONRA YENİDƏN YÜKLƏ
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                    return;
+                }
             }
 
-            // 3 dəqiqə gözlə
+            // 3 DƏQİQƏ
             if (lastSearchTime) {
                 const diff = (new Date() - lastSearchTime) / 1000;
                 if (diff < 180) {
@@ -296,39 +262,37 @@
                 }
             }
 
-            // AXTARIŞ - BURADA SADƏCƏ students array-ində axtarır
+            // AXTARIŞ
             let results = [];
             const q = query.toLowerCase();
             
             try {
                 switch(currentMethod) {
-                    case 1: // Ad
+                    case 1:
                         results = students.filter(s => 
-                            s.ad && s.ad.toLowerCase().includes(q)
+                            s.ad_soyad.toLowerCase().includes(q)
                         );
                         break;
-                    case 2: // Şagird nömrəsi
+                    case 2:
                         results = students.filter(s => 
-                            s.no && s.no.includes(query)
+                            s.utis.includes(query)
                         );
                         break;
-                    case 3: // UTIS
+                    case 3:
                         results = students.filter(s => 
-                            s.utis && s.utis.toLowerCase().includes(q)
+                            s.tel.includes(query)
                         );
                         break;
-                    case 4: // Telefon
+                    case 4:
                         results = students.filter(s => 
-                            s.tel && s.tel.includes(query)
+                            s.sinif.includes(query)
                         );
                         break;
                 }
             } catch(e) {
-                console.log('Axtarış xətası:', e);
                 results = [];
             }
 
-            // Nəticə
             lastSearchTime = new Date();
             searchCount++;
             showResults(results);
@@ -343,7 +307,7 @@
                     <div class="no-result">
                         <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
                         <h3>Nəticə tapılmadı</h3>
-                        <p style="color: #94a3b8; margin-top: 10px;">Başqa söz cəhd edin</p>
+                        <p style="color: #94a3b8;">"${document.getElementById('searchInput').value}" - bu sözlə nəticə yoxdur</p>
                     </div>
                 `;
                 return;
@@ -353,26 +317,20 @@
             results.slice(0, 20).forEach(s => {
                 html += `
                     <div class="result-card">
-                        <div class="result-name">${s.ad || 'Bilinmir'}</div>
+                        <div class="result-name">${s.ad_soyad || 'Bilinmir'}</div>
                         <div class="result-grid">
                             <div>
                                 <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">📋</span> UTIS: ${s.utis || '-'}</div>
-                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">🎓</span> №: ${s.no || '-'}</div>
-                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">🏫</span> Sinif: ${s.sinif || '-'}</div>
+                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">📞</span> ${s.tel || '-'}</div>
+                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">🎓</span> Sinif: ${s.sinif || '-'}</div>
                             </div>
                             <div>
-                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">📞</span> ${s.tel || '-'}</div>
-                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">🏛️</span> ${s.mekteb ? s.mekteb.substring(0, 30) + '...' : '-'}</div>
-                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">📍</span> ${s.unvan ? s.unvan.substring(0, 30) + '...' : '-'}</div>
+                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">🏫</span> ${s.mekteb ? s.mekteb.substring(0, 40) + '...' : '-'}</div>
                             </div>
                         </div>
                     </div>
                 `;
             });
-            
-            if (results.length > 20) {
-                html += `<p style="color: #94a3b8; text-align: center; padding: 20px;">... və ${results.length - 20} nəticə daha</p>`;
-            }
             
             div.innerHTML = html;
         }
