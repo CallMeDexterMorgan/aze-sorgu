@@ -8,8 +8,8 @@
             background: #050608;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: white;
-            padding: 0;
             margin: 0;
+            padding: 0;
         }
         .navbar {
             background: #0a0c12;
@@ -162,7 +162,7 @@
         document.getElementById('userDisplay').innerHTML = username;
 
         // ===========================================
-        // SQL YÜKLƏMƏ - TƏMİZ, SADƏCƏ İŞLƏYƏCƏK!
+        // SQL YÜKLƏ - 100% İŞLƏYƏCƏK!
         // ===========================================
         
         let students = [];
@@ -170,39 +170,71 @@
         let lastSearchTime = null;
         let searchCount = 0;
 
-        // Cache-dən yüklə
-        const cached = localStorage.getItem('sagird_170k');
-        if (cached) {
-            students = JSON.parse(cached);
-        } else {
+        // Dərhal yüklə
+        (function loadData() {
+            // Əvvəlcə cache yoxla
+            const cached = localStorage.getItem('sagird_170k');
+            if (cached) {
+                students = JSON.parse(cached);
+                console.log('Cache-dən yükləndi:', students.length);
+                return;
+            }
+
             // GitHub-dan yüklə
             fetch('https://raw.githubusercontent.com/CallMeDexterMorgan/aze-sorgu/main/sagird.sql')
                 .then(res => res.text())
                 .then(sql => {
+                    console.log('SQL yükləndi, uzunluq:', sql.length);
+                    
                     const rows = [];
                     let id = 1;
                     
-                    // SADƏCƏ VALUES hissəsini al
+                    // SADƏCƏ VALUES hissəsini götür
                     const lines = sql.split('\n');
                     
                     for (let line of lines) {
                         if (line.includes('INSERT INTO') && line.includes('sagirdler')) {
-                            const match = line.match(/VALUES\s*\((.*)\);/i);
+                            // VALUES ( ... ) hissəsini al
+                            const match = line.match(/VALUES\s*\((.*)\)/i);
                             if (match) {
-                                const values = match[1].split(',').map(v => 
-                                    v.trim().replace(/^'|'$/g, '').replace(/\\'/g, "'")
+                                const valuesString = match[1];
+                                
+                                // Dəyərləri ayır
+                                const values = [];
+                                let current = '';
+                                let inQuotes = false;
+                                
+                                for (let char of valuesString) {
+                                    if (char === "'" && !inQuotes) {
+                                        inQuotes = true;
+                                        current += char;
+                                    } else if (char === "'" && inQuotes) {
+                                        inQuotes = false;
+                                        current += char;
+                                    } else if (char === ',' && !inQuotes) {
+                                        values.push(current.trim());
+                                        current = '';
+                                    } else {
+                                        current += char;
+                                    }
+                                }
+                                values.push(current.trim());
+                                
+                                // Təmizlə
+                                const clean = values.map(v => 
+                                    v.replace(/^'|'$/g, '').trim()
                                 );
                                 
                                 rows.push({
                                     id: id++,
-                                    ad: values[1] || '',
-                                    no: values[2] || '',
-                                    utis: values[3] || '',
-                                    sinif: values[4] || '',
-                                    mekteb: values[5] || '',
-                                    tel: values[6] || '',
-                                    unvan: values[7] || '',
-                                    il: values[8] || '2023'
+                                    ad: clean[1] || 'Bilinmir',
+                                    no: clean[2] || '-',
+                                    utis: clean[3] || '-',
+                                    sinif: clean[4] || '-',
+                                    mekteb: clean[5] || '-',
+                                    tel: clean[6] || '-',
+                                    unvan: clean[7] || '-',
+                                    il: clean[8] || '2023'
                                 });
                             }
                         }
@@ -211,10 +243,13 @@
                     if (rows.length > 0) {
                         students = rows;
                         localStorage.setItem('sagird_170k', JSON.stringify(rows));
+                        console.log('✅ Uğurlu!', rows.length, 'tələbə yükləndi');
                     }
                 })
-                .catch(() => {});
-        }
+                .catch(err => {
+                    console.log('Xəta:', err);
+                });
+        })();
 
         // ===========================================
         // SORGULAMA
@@ -242,6 +277,16 @@
                 return;
             }
 
+            // Hələ məlumat yoxdursa
+            if (students.length === 0) {
+                alert('Məlumat bazası yüklənir, 1 saniyə gözlə və yenidən axtar!');
+                // Təkrar yükləməyə çalış
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+                return;
+            }
+
             // 3 dəqiqə gözlə
             if (lastSearchTime) {
                 const diff = (new Date() - lastSearchTime) / 1000;
@@ -251,25 +296,39 @@
                 }
             }
 
-            // Axtar
+            // AXTARIŞ - BURADA SADƏCƏ students array-ində axtarır
             let results = [];
             const q = query.toLowerCase();
             
-            switch(currentMethod) {
-                case 1:
-                    results = students.filter(s => s.ad.toLowerCase().includes(q));
-                    break;
-                case 2:
-                    results = students.filter(s => s.no.includes(query));
-                    break;
-                case 3:
-                    results = students.filter(s => s.utis.toLowerCase().includes(q));
-                    break;
-                case 4:
-                    results = students.filter(s => s.tel.includes(query));
-                    break;
+            try {
+                switch(currentMethod) {
+                    case 1: // Ad
+                        results = students.filter(s => 
+                            s.ad && s.ad.toLowerCase().includes(q)
+                        );
+                        break;
+                    case 2: // Şagird nömrəsi
+                        results = students.filter(s => 
+                            s.no && s.no.includes(query)
+                        );
+                        break;
+                    case 3: // UTIS
+                        results = students.filter(s => 
+                            s.utis && s.utis.toLowerCase().includes(q)
+                        );
+                        break;
+                    case 4: // Telefon
+                        results = students.filter(s => 
+                            s.tel && s.tel.includes(query)
+                        );
+                        break;
+                }
+            } catch(e) {
+                console.log('Axtarış xətası:', e);
+                results = [];
             }
 
+            // Nəticə
             lastSearchTime = new Date();
             searchCount++;
             showResults(results);
@@ -282,8 +341,9 @@
             if (results.length === 0) {
                 div.innerHTML = `
                     <div class="no-result">
-                        <div style="font-size: 48px;">🔍</div>
+                        <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
                         <h3>Nəticə tapılmadı</h3>
+                        <p style="color: #94a3b8; margin-top: 10px;">Başqa söz cəhd edin</p>
                     </div>
                 `;
                 return;
@@ -293,22 +353,26 @@
             results.slice(0, 20).forEach(s => {
                 html += `
                     <div class="result-card">
-                        <div class="result-name">${s.ad}</div>
+                        <div class="result-name">${s.ad || 'Bilinmir'}</div>
                         <div class="result-grid">
                             <div>
-                                <div><span style="color: #8b5cf6;">📋</span> UTIS: ${s.utis}</div>
-                                <div><span style="color: #8b5cf6;">🎓</span> №: ${s.no}</div>
-                                <div><span style="color: #8b5cf6;">🏫</span> Sinif: ${s.sinif}</div>
+                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">📋</span> UTIS: ${s.utis || '-'}</div>
+                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">🎓</span> №: ${s.no || '-'}</div>
+                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">🏫</span> Sinif: ${s.sinif || '-'}</div>
                             </div>
                             <div>
-                                <div><span style="color: #8b5cf6;">📞</span> ${s.tel}</div>
-                                <div><span style="color: #8b5cf6;">🏛️</span> ${s.mekteb.substring(0, 30)}...</div>
-                                <div><span style="color: #8b5cf6;">📍</span> ${s.unvan.substring(0, 30)}...</div>
+                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">📞</span> ${s.tel || '-'}</div>
+                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">🏛️</span> ${s.mekteb ? s.mekteb.substring(0, 30) + '...' : '-'}</div>
+                                <div style="margin-bottom: 8px;"><span style="color: #8b5cf6; margin-right: 8px;">📍</span> ${s.unvan ? s.unvan.substring(0, 30) + '...' : '-'}</div>
                             </div>
                         </div>
                     </div>
                 `;
             });
+            
+            if (results.length > 20) {
+                html += `<p style="color: #94a3b8; text-align: center; padding: 20px;">... və ${results.length - 20} nəticə daha</p>`;
+            }
             
             div.innerHTML = html;
         }
