@@ -89,17 +89,9 @@
                 <i class="fas fa-exclamation-circle me-2"></i> Key və ya istifadəçi adı yanlışdır!
             </div>
         </form>
-        
-        <div class="text-center mt-4 text-muted small">
-            <i class="fas fa-database me-1"></i> Sagird.sql bazası ilə işləyir
-        </div>
     </div>
 
     <script>
-        // ===========================================
-        // 🔐 KEY: 010101ServerCrashed
-        // ===========================================
-        
         const VALID_KEY = '010101ServerCrashed';
         
         document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -109,19 +101,13 @@
             const key = document.getElementById('accessKey').value;
             
             if (key === VALID_KEY && username.length >= 3) {
-                // Hər istifadəçiyə AYRI hesab
                 const userData = {
                     username: username,
                     loginTime: new Date().toISOString(),
-                    userId: CryptoJS.MD5(username + Date.now()).toString().substring(0, 8),
-                    key: CryptoJS.SHA256(key).toString()
+                    userId: CryptoJS.MD5(username + Date.now()).toString().substring(0, 8)
                 };
                 
-                // İstifadəçini yadda saxla
-                localStorage.setItem('aze_user_' + CryptoJS.MD5(VALID_KEY).toString(), JSON.stringify(userData));
                 sessionStorage.setItem('aze_user', JSON.stringify(userData));
-                
-                // Panelə yönləndir
                 window.location.href = 'panel.html';
             } else {
                 document.getElementById('errorMessage').style.display = 'block';
